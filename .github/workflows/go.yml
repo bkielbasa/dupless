@@ -43,13 +43,3 @@ jobs:
           COVERALLS_TOKEN: "${{ secrets.github_token }}"
         name: "Send coverage"
         run: "goveralls -coverprofile=covprofile -service=github"
-  golangci-lint: 
-    runs-on: buntu-latest
-    steps: 
-      - 
-        uses: actions/checkout@v2
-      - 
-        name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with: 
-          version: v1.36u
