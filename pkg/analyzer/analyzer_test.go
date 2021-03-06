@@ -3,9 +3,9 @@ package analyzer
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"testing"
 
+	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
@@ -15,7 +15,7 @@ func TestFuncNames(t *testing.T) {
 		t.Fatalf("Failed to get wd: %s", err)
 	}
 
-	forbiddenFuncNames = []string{"dupa"}
+	forbiddenFuncNamesArgs = []string{"dupa"}
 
 	testdata := filepath.Join(filepath.Dir(filepath.Dir(wd)), "testdata")
 	analysistest.Run(t, testdata, NewAnalyzer(), "funcs")
@@ -27,8 +27,23 @@ func TestPackageName(t *testing.T) {
 		t.Fatalf("Failed to get wd: %s", err)
 	}
 
-	forbiddenPackageNames = []*regexp.Regexp{regexp.MustCompile("dup")}
+	forbiddenPackageNamesArgs = []string{"dup"}
 
 	testdata := filepath.Join(filepath.Dir(filepath.Dir(wd)), "testdata")
 	analysistest.Run(t, testdata, NewAnalyzer(), "dupaInPkgName")
+}
+
+func TestInvalidRegexp(t *testing.T) {
+	forbiddenPackageNamesArgs = []string{"["}
+	anal := NewAnalyzer()
+	_, err := anal.Run(&analysis.Pass{})
+	if err == nil {
+		t.Fatalf("expected to get an error but got nil")
+	}
+	forbiddenPackageNamesArgs = []string{""}
+	forbiddenFuncNamesArgs = []string{"["}
+	_, err = anal.Run(&analysis.Pass{})
+	if err == nil {
+		t.Fatalf("expected to get an error but got nil")
+	}
 }

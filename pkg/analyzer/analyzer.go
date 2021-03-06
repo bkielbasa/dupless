@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"flag"
+	"fmt"
 	"go/ast"
 	"regexp"
 	"strings"
@@ -12,16 +13,37 @@ import (
 //nolint:gochecknoglobals
 var flagSet flag.FlagSet
 
+type arrayFlags []string
+
+func (f *arrayFlags) String() string {
+	s := []string{}
+	for _, a := range *f {
+		s = append(s, a)
+	}
+
+	return fmt.Sprintf("%v", s)
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
 //nolint:gochecknoglobals
 var (
-	maxComplexity         int
-	forbiddenFuncNames    []string
-	forbiddenPackageNames []*regexp.Regexp
+	forbiddenFuncNamesArgs    arrayFlags
+	forbiddenFuncNames        []*regexp.Regexp
+	forbiddenPackageNames     []*regexp.Regexp
+	forbiddenPackageNamesArgs arrayFlags
 )
+
+//nolint:gochecknoglobals
+var defaultPackageNames = arrayFlags{"^util", "^helper", "^base"}
 
 //nolint:gochecknoinits
 func init() {
-	// flagSet.IntVar(&maxComplexity, "maxComplexity", 10, "max complexity the function can have")
+	flagSet.Var(&forbiddenFuncNamesArgs, "functionNames", "list of regexps that are forbidden to use in function names")
+	flagSet.Var(&forbiddenPackageNamesArgs, "packageNames", "list of regexps that are forbidden to use in package names")
 }
 
 func NewAnalyzer() *analysis.Analyzer {
@@ -34,6 +56,27 @@ func NewAnalyzer() *analysis.Analyzer {
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
+	for _, pattern := range forbiddenFuncNamesArgs {
+		rxp, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse funciton pattern: %w", err)
+		}
+
+		forbiddenFuncNames = append(forbiddenFuncNames, rxp)
+	}
+
+	if len(forbiddenPackageNamesArgs) == 0 {
+		forbiddenPackageNamesArgs = defaultPackageNames
+	}
+	for _, pattern := range forbiddenPackageNamesArgs {
+		rxp, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse package pattern: %w", err)
+		}
+
+		forbiddenPackageNames = append(forbiddenPackageNames, rxp)
+	}
+
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(node ast.Node) bool {
 			if f, ok := node.(*ast.FuncDecl); ok {
@@ -53,7 +96,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 func checkFunctionNames(pass *analysis.Pass, f *ast.FuncDecl) {
 	funcName := strings.ToLower(f.Name.Name)
 
-	for _, word := range forbiddenFuncNames {
+	for _, word := range forbiddenFuncNamesArgs {
 		if strings.Contains(funcName, word) {
 			pass.Reportf(f.Pos(), "the function name contains a forbidden word: %s", word)
 		}
