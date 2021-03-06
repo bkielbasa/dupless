@@ -59,7 +59,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	for _, pattern := range forbiddenFuncNamesArgs {
 		rxp, err := regexp.Compile(pattern)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse funciton pattern: %w", err)
+			return nil, fmt.Errorf("cannot parse function pattern: %w", err)
 		}
 
 		forbiddenFuncNames = append(forbiddenFuncNames, rxp)
