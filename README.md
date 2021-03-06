@@ -20,3 +20,9 @@ dupless -functionNames 'BadWord' -functionNames '^foo' # no functions that conta
 ```
 
 As you can see, you can define the parameter multiple times and all patterns will apply.
+
+## Installation
+
+```
+go get github.com/bkielbasa/dupless/cmd/dupless
+```
