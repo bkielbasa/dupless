@@ -24,8 +24,8 @@ func (f *arrayFlags) String() string {
 	return fmt.Sprintf("%v", s)
 }
 
-func (i *arrayFlags) Set(value string) error {
-	*i = append(*i, value)
+func (f *arrayFlags) Set(value string) error {
+	*f = append(*f, value)
 	return nil
 }
 
