@@ -41,7 +41,7 @@ var (
 )
 
 //nolint:gochecknoglobals
-var defaultPackageNames = arrayFlags{"^util[s]$", "^helper[s]$", "^base$"}
+var defaultPackageNames = arrayFlags{"^util[s]$", "^helper[s]$", "^base$", "^interfaces$"}
 
 //nolint:gochecknoinits
 func init() {

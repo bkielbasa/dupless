@@ -4,9 +4,10 @@
 
 
 Default forbidden package names are:
-* `^util`
-* `^helper[s]`
-* `^base`
+* `^util[s]$`
+* `^helper[s]$`
+* `^base$`
+* `^interfaces`
 
 All patterns are regular expressions so you have a huge flexibility.
 
