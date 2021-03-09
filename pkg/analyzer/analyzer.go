@@ -60,35 +60,8 @@ func NewAnalyzer() *analysis.Analyzer {
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
-	for _, pattern := range forbiddenFuncNamesArgs {
-		rxp, err := regexp.Compile(pattern)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse function pattern: %w", err)
-		}
-
-		forbiddenFuncNames = append(forbiddenFuncNames, rxp)
-	}
-
-	if len(forbiddenPackageNamesArgs) == 0 {
-		forbiddenPackageNamesArgs = defaultPackageNames
-	}
-
-	for _, pattern := range forbiddenPackageNamesArgs {
-		rxp, err := regexp.Compile(pattern)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse package pattern: %w", err)
-		}
-
-		forbiddenPackageNames = append(forbiddenPackageNames, rxp)
-	}
-
-	for _, pattern := range forbiddenVariableNamesArgs {
-		rxp, err := regexp.Compile(pattern)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse variable pattern: %w", err)
-		}
-
-		forbiddenVariableNames = append(forbiddenVariableNames, rxp)
+	if err := configureDefaults(); err != nil {
+		return nil, err
 	}
 
 	for _, file := range pass.Files {
@@ -118,6 +91,41 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	return nil, nil
 }
 
+func configureDefaults() error {
+	for _, pattern := range forbiddenFuncNamesArgs {
+		rxp, err := regexp.Compile(pattern)
+		if err != nil {
+			return fmt.Errorf("cannot parse function pattern: %w", err)
+		}
+
+		forbiddenFuncNames = append(forbiddenFuncNames, rxp)
+	}
+
+	if len(forbiddenPackageNamesArgs) == 0 {
+		forbiddenPackageNamesArgs = defaultPackageNames
+	}
+
+	for _, pattern := range forbiddenPackageNamesArgs {
+		rxp, err := regexp.Compile(pattern)
+		if err != nil {
+			return fmt.Errorf("cannot parse package pattern: %w", err)
+		}
+
+		forbiddenPackageNames = append(forbiddenPackageNames, rxp)
+	}
+
+	for _, pattern := range forbiddenVariableNamesArgs {
+		rxp, err := regexp.Compile(pattern)
+		if err != nil {
+			return fmt.Errorf("cannot parse variable pattern: %w", err)
+		}
+
+		forbiddenVariableNames = append(forbiddenVariableNames, rxp)
+	}
+
+	return nil
+}
+
 func checkVarNamesInValueSpec(pass *analysis.Pass, specs []ast.Spec) {
 	for _, spec := range specs {
 		var value *ast.ValueSpec
@@ -135,7 +143,6 @@ func checkVarNamesInValueSpec(pass *analysis.Pass, specs []ast.Spec) {
 				}
 			}
 		}
-
 	}
 }
 
@@ -152,6 +159,7 @@ func checkVarNames(pass *analysis.Pass, expressions []ast.Expr) {
 		}
 	}
 }
+
 func checkFunctionNames(pass *analysis.Pass, f *ast.FuncDecl) {
 	funcName := strings.ToLower(f.Name.Name)
 
