@@ -5,7 +5,7 @@
 
 Default forbidden package names are:
 * `^util`
-* `^helper`
+* `^helper[s]`
 * `^base`
 
 All patterns are regular expressions so you have a huge flexibility.
